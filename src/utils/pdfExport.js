@@ -1,13 +1,15 @@
 import jsPDF from 'jspdf'
 
-// Hebrew-supporting PDF generation using jsPDF with canvas rendering
-// We render an HTML page to canvas, then embed in PDF for proper Hebrew/RTL support
-
 const PURPLE = '#8A10EB'
 const PURPLE_LIGHT = '#f5f3ff'
 const GRAY_DARK = '#1a1a2e'
 const GRAY_MID = '#6b7280'
 const GRAY_LIGHT = '#9ca3af'
+
+// A4 at 96dpi: 794 x 1123px  |  595.28 x 841.89pt
+const A4_W = 794
+const A4_H = 1123
+const PT_PER_PX = 595.28 / A4_W  // 0.74972…
 
 const CONTACT_LABELS = {
   phone: 'טלפון',
@@ -33,11 +35,11 @@ function buildCampaignHTML(campaign, index) {
     : '<span class="empty">לא הוזן</span>'
 
   const urlDisplay = campaign.url
-    ? `<a href="${campaign.url}" class="pdf-link">${esc(campaign.url)}</a>`
+    ? `<a href="${esc(campaign.url)}" class="pdf-link">${esc(campaign.url)}</a>`
     : '<span class="empty">לא הוזן</span>'
 
   const videoLinkDisplay = campaign.videoLink
-    ? `<a href="${campaign.videoLink}" class="pdf-link">${esc(campaign.videoLink)}</a>`
+    ? `<a href="${esc(campaign.videoLink)}" class="pdf-link">${esc(campaign.videoLink)}</a>`
     : '<span class="empty">לא הוזן</span>'
 
   const videoSection = campaign.videoType === 'link'
@@ -115,7 +117,7 @@ async function getLogoDataUrl() {
 function buildFullHTML(orgName, campaigns, logoDataUrl) {
   const campaignsHTML = campaigns.map((c, i) => buildCampaignHTML(c, i)).join('')
   const logoImg = logoDataUrl
-    ? `<img src="${logoDataUrl}" class="header-logo" alt="הבריפון" />`
+    ? `<div class="logo-wrap"><img src="${logoDataUrl}" class="header-logo" alt="הבריפון" /></div>`
     : ''
 
   return `<!DOCTYPE html>
@@ -134,24 +136,33 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
     color: ${GRAY_DARK};
     font-size: 13px;
     line-height: 1.6;
-    width: 794px;
+    width: ${A4_W}px;
     padding: 0;
   }
 
   .page-header {
     background: linear-gradient(135deg, ${PURPLE}, #a855f7);
     color: white;
-    padding: 28px 36px;
-    margin-bottom: 28px;
+    padding: 24px 32px;
+    margin-bottom: 24px;
     display: flex;
     align-items: center;
     gap: 20px;
   }
 
-  .header-logo {
-    height: 48px;
-    width: auto;
+  .logo-wrap {
+    background: white;
+    border-radius: 10px;
+    padding: 6px 14px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-logo {
+    height: 40px;
+    width: auto;
+    display: block;
   }
 
   .header-text { flex: 1; }
@@ -159,31 +170,30 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
   .page-header .org-label {
     font-size: 11px;
     font-weight: 600;
-    opacity: 0.75;
+    opacity: 0.8;
     letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
 
   .page-header .org-name {
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 800;
     letter-spacing: -0.5px;
   }
 
   .page-header .subtitle {
-    font-size: 13px;
-    opacity: 0.8;
-    margin-top: 4px;
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 3px;
   }
 
-  .content { padding: 0 28px 28px; }
+  .content { padding: 0 24px 24px; }
 
   .campaign-card {
     border: 1.5px solid #ede9fe;
     border-radius: 14px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     page-break-inside: avoid;
   }
 
@@ -191,7 +201,7 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 13px 18px;
+    padding: 12px 16px;
     background: ${PURPLE_LIGHT};
     border-bottom: 1px solid #ede9fe;
   }
@@ -227,15 +237,15 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
     padding: 3px 9px;
   }
 
-  .campaign-body { padding: 16px 18px; }
+  .campaign-body { padding: 14px 16px; }
 
-  .fields-grid { margin-bottom: 12px; }
+  .fields-grid { margin-bottom: 10px; }
 
   .field-row {
     display: flex;
     align-items: flex-start;
     gap: 8px;
-    padding: 7px 0;
+    padding: 6px 0;
     border-bottom: 1px solid #f5f3ff;
   }
 
@@ -245,7 +255,7 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
     font-size: 12px;
     font-weight: 600;
     color: #7c3aed;
-    min-width: 110px;
+    min-width: 120px;
     flex-shrink: 0;
     padding-top: 1px;
   }
@@ -272,8 +282,8 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
   .empty { color: ${GRAY_LIGHT}; font-style: italic; }
 
   .section {
-    margin-top: 12px;
-    padding: 12px 14px;
+    margin-top: 10px;
+    padding: 10px 12px;
     background: ${PURPLE_LIGHT};
     border-radius: 10px;
     border: 1px solid #e9d5ff;
@@ -285,7 +295,7 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
     color: #7c3aed;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .notes-text {
@@ -308,21 +318,11 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
     padding-right: 4px;
   }
 
-  .thumb-img {
-    width: 120px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 7px;
-    border: 1px solid #e9d5ff;
-  }
-
-  .thumb-row { align-items: center; }
-
   .footer {
     text-align: center;
     color: ${GRAY_LIGHT};
     font-size: 10px;
-    padding: 16px 0 20px;
+    padding: 14px 0 18px;
     border-top: 1px solid #f3f4f6;
     margin-top: 8px;
   }
@@ -345,25 +345,14 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
 </html>`
 }
 
-function getElementDocumentOffset(el) {
-  let top = 0, left = 0
-  while (el) {
-    top += el.offsetTop || 0
-    left += el.offsetLeft || 0
-    el = el.offsetParent
-  }
-  return { top, left }
-}
-
 export async function generatePDF(orgName, campaigns) {
   const logoDataUrl = await getLogoDataUrl()
   const html = buildFullHTML(orgName, campaigns, logoDataUrl)
 
-  // Open in a hidden iframe, render, then capture via html2canvas
   const { default: html2canvas } = await import('html2canvas')
 
   const iframe = document.createElement('iframe')
-  iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1px;border:none;visibility:hidden;'
+  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${A4_W}px;height:1px;border:none;visibility:hidden;`
   document.body.appendChild(iframe)
 
   await new Promise(resolve => {
@@ -371,20 +360,17 @@ export async function generatePDF(orgName, campaigns) {
     iframe.srcdoc = html
   })
 
-  // Wait for fonts
-  await new Promise(r => setTimeout(r, 1000))
+  await new Promise(r => setTimeout(r, 1500))
 
   const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
   const body = iframeDoc.body
 
-  // Set proper height
   iframe.style.height = body.scrollHeight + 'px'
-  await new Promise(r => setTimeout(r, 200))
+  await new Promise(r => setTimeout(r, 300))
 
-  // Collect clickable link positions before capturing
+  // Collect link positions (in original px space)
   const linkData = []
-  const linkEls = iframeDoc.querySelectorAll('a.pdf-link[href]')
-  for (const el of linkEls) {
+  for (const el of iframeDoc.querySelectorAll('a.pdf-link[href]')) {
     const rect = el.getBoundingClientRect()
     const scrollY = iframe.contentWindow.scrollY || 0
     const scrollX = iframe.contentWindow.scrollX || 0
@@ -392,45 +378,69 @@ export async function generatePDF(orgName, campaigns) {
       url: el.href,
       x: rect.left + scrollX,
       y: rect.top + scrollY,
-      width: rect.width,
-      height: rect.height,
+      w: rect.width,
+      h: rect.height,
     })
   }
 
+  const SCALE = 2
   const canvas = await html2canvas(body, {
-    scale: 2,
+    scale: SCALE,
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
-    width: 794,
-    windowWidth: 794,
+    width: A4_W,
+    windowWidth: A4_W,
     logging: false,
   })
 
   document.body.removeChild(iframe)
 
-  const imgData = canvas.toDataURL('image/jpeg', 0.95)
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'px',
-    format: [794, canvas.height / 2],
-  })
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+  const pdfW = pdf.internal.pageSize.getWidth()   // 595.28pt
+  const pdfH = pdf.internal.pageSize.getHeight()  // 841.89pt
 
-  const pdfWidth = pdf.internal.pageSize.getWidth()
-  const pdfHeight = pdf.internal.pageSize.getHeight()
+  // Height in canvas pixels that corresponds to one A4 page
+  const canvasPageH = A4_H * SCALE
+  const totalPages = Math.ceil(canvas.height / canvasPageH)
 
-  pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+  for (let page = 0; page < totalPages; page++) {
+    if (page > 0) pdf.addPage()
 
-  // Add clickable link annotations over the image
-  for (const link of linkData) {
-    if (link.url) {
-      pdf.link(link.x, link.y, link.width, link.height, { url: link.url })
+    const srcY = page * canvasPageH
+    const srcH = Math.min(canvasPageH, canvas.height - srcY)
+
+    // Slice canvas into A4 page strip
+    const strip = document.createElement('canvas')
+    strip.width = canvas.width
+    strip.height = srcH
+    strip.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH)
+
+    const imgData = strip.toDataURL('image/png')
+    // Rendered height in pt (srcH is at SCALE, divide back to px, then convert to pt)
+    const renderedPtH = (srcH / SCALE) * PT_PER_PX
+
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, renderedPtH)
+
+    // Link annotations for this page
+    const pageTopPx = page * A4_H
+    const pageBottomPx = pageTopPx + A4_H
+
+    for (const link of linkData) {
+      if (!link.url) continue
+      if (link.y + link.h < pageTopPx || link.y > pageBottomPx) continue
+      pdf.link(
+        link.x * PT_PER_PX,
+        (link.y - pageTopPx) * PT_PER_PX,
+        link.w * PT_PER_PX,
+        link.h * PT_PER_PX,
+        { url: link.url }
+      )
     }
   }
 
   const today = new Date()
   const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   const safeName = (orgName || 'הבריפון').replace(/\s+/g, '-').replace(/[\\/:*?"<>|]/g, '')
-  const fileName = `${safeName}_${dateStr}.pdf`
-  pdf.save(fileName)
+  pdf.save(`${safeName}_${dateStr}.pdf`)
 }
