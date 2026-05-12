@@ -1,0 +1,22 @@
+/* Responsive grid for campaign fields */
+.fields-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 540px) {
+  .fields-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile padding adjustments */
+@media (max-width: 480px) {
+  .campaign-body-inner {
+    padding: 14px 16px !important;
+  }
+  .campaign-header-inner {
+    padding: 12px 14px !important;
+  }
+}
