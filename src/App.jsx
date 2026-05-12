@@ -76,17 +76,13 @@ export default function App() {
       }}>
         <div style={{ maxWidth: 880, margin: '0 auto', padding: '0 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, height: 60 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: 'linear-gradient(135deg, #8A10EB, #a855f7)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 800, fontSize: 18, boxShadow: '0 2px 8px rgba(138,16,235,0.3)'
-              }}>B</div>
-              <div>
-                <span style={{ fontWeight: 700, fontSize: 18, color: '#1a1a2e' }}>הבריפון</span>
-                <div style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, marginTop: 1 }}>מבית שיווק דיגיטל</div>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
+              <img
+                src="/logo.png"
+                alt="הבריפון"
+                style={{ height: 38, width: 'auto', display: 'block' }}
+              />
+              <div style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, letterSpacing: '0.03em' }}>מבית שיווק דיגיטל</div>
             </div>
             <h1 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#6b7280' }}>בריף שיווקי</h1>
             <ExportButton onClick={handleExport} isLoading={isExporting} />
