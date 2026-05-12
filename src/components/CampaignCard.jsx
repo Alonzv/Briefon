@@ -244,6 +244,7 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
                 type="date"
                 value={campaign.startDate}
                 onChange={e => onUpdate({ startDate: e.target.value })}
+                onClick={e => e.target.showPicker?.()}
                 dir="ltr"
               />
             </Field>
@@ -252,6 +253,7 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
                 type="date"
                 value={campaign.endDate}
                 onChange={e => onUpdate({ endDate: e.target.value })}
+                onClick={e => e.target.showPicker?.()}
                 dir="ltr"
               />
             </Field>
