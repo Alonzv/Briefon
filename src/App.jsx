@@ -78,7 +78,7 @@ export default function App() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, height: 60 }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
               <img
-                src="/logo.png"
+                src="/logo_briefon.png"
                 alt="הבריפון"
                 style={{ height: 38, width: 'auto', display: 'block' }}
               />
