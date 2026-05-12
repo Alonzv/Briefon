@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import FacebookForm from './FacebookForm'
 
 const PURPLE = '#8A10EB'
@@ -64,23 +63,6 @@ function StyledTextarea({ style, ...props }) {
 }
 
 export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRemove, onToggleCollapse }) {
-  const fileInputRef = useRef(null)
-
-  const handleThumbnailChange = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      onUpdate({ thumbnail: file, thumbnailPreview: ev.target.result })
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const removeThumbnail = () => {
-    onUpdate({ thumbnail: null, thumbnailPreview: null })
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
   const cardHeaderBg = campaign.collapsed
     ? 'linear-gradient(135deg, #faf5ff, #f5f3ff)'
     : 'linear-gradient(135deg, #faf5ff, #f5f3ff)'
@@ -349,85 +331,6 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
                   placeholder="תאר את הסרטון הישן..."
                   rows={3}
                 />
-              )}
-            </div>
-          </div>
-
-          {/* Thumbnail Upload */}
-          <div style={{ borderRadius: 12, border: '1.5px solid #e9d5ff', overflow: 'hidden' }}>
-            <div style={{ padding: '12px 16px', background: '#faf5ff', borderBottom: '1px solid #e9d5ff' }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#7c3aed', letterSpacing: '0.04em' }}>תמונה ממוזערת (Thumbnail)</span>
-            </div>
-            <div style={{ padding: 16 }}>
-              {campaign.thumbnailPreview ? (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                  <img
-                    src={campaign.thumbnailPreview}
-                    alt="thumbnail preview"
-                    style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 8, border: '1.5px solid #e9d5ff', flexShrink: 0 }}
-                  />
-                  <div>
-                    <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 8 }}>
-                      {campaign.thumbnail?.name}
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => {
-                          const a = document.createElement('a')
-                          a.href = campaign.thumbnailPreview
-                          a.download = campaign.thumbnail?.name || 'thumbnail.jpg'
-                          a.click()
-                        }}
-                        style={{
-                          padding: '5px 12px', borderRadius: 6,
-                          border: `1.5px solid #c4b5fd`, background: '#faf5ff',
-                          color: PURPLE, fontSize: 12, fontWeight: 600,
-                          cursor: 'pointer', fontFamily: 'inherit'
-                        }}
-                      >
-                        הורד תמונה
-                      </button>
-                      <button
-                        onClick={removeThumbnail}
-                        style={{
-                          padding: '5px 12px', borderRadius: 6,
-                          border: '1.5px solid #fecaca', background: '#fff5f5',
-                          color: '#ef4444', fontSize: 12, fontWeight: 600,
-                          cursor: 'pointer', fontFamily: 'inherit'
-                        }}
-                      >
-                        הסר תמונה
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <label
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: 8, padding: '28px 20px',
-                    border: '2px dashed #d8b4fe', borderRadius: 12,
-                    cursor: 'pointer', transition: 'all 0.2s',
-                    background: '#fdfaff',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = PURPLE; e.currentTarget.style.background = '#faf5ff' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#d8b4fe'; e.currentTarget.style.background = '#fdfaff' }}
-                >
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={PURPLE} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21,15 16,10 5,21" />
-                  </svg>
-                  <span style={{ fontSize: 13, color: '#7c3aed', fontWeight: 600 }}>לחץ להעלאת תמונה</span>
-                  <span style={{ fontSize: 11, color: '#9ca3af' }}>PNG, JPG, WEBP עד 10MB</span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailChange}
-                    style={{ display: 'none' }}
-                  />
-                </label>
               )}
             </div>
           </div>

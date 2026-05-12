@@ -41,7 +41,7 @@ function buildCampaignHTML(campaign, index) {
     : '<span class="empty">לא הוזן</span>'
 
   const videoSection = campaign.videoType === 'link'
-    ? `<div class="field-row"><span class="field-label">לינק לסרטון:</span><span class="field-value ltr">${videoLinkDisplay}</span></div>`
+    ? `<div class="field-row"><span class="field-label">לינק להורדת קבצים:</span><span class="field-value ltr">${videoLinkDisplay}</span></div>`
     : `<div class="field-row"><span class="field-label">תיאור סרטון:</span><span class="field-value">${esc(campaign.videoDescription) || '<span class="empty">לא הוזן</span>'}</span></div>`
 
   const contactLabels = (campaign.contactDetails || []).map(c => CONTACT_LABELS[c] || c).join(' | ')
@@ -58,13 +58,6 @@ function buildCampaignHTML(campaign, index) {
       <div class="field-row"><span class="field-label">פרטי התקשרות:</span><span class="field-value">${esc(contactLabels) || '<span class="empty">לא נבחרו</span>'}</span></div>
       <div class="field-row"><span class="field-label">שאלה מבדלת:</span><span class="field-value">${esc(campaign.distinguishingQuestion) || '<span class="empty">לא הוזן</span>'}${answersHTML}</span></div>
       <div class="field-row"><span class="field-label">אישור עדכונים:</span><span class="field-value">${campaign.acceptUpdates ? '✓ מסומן' : '✗ לא מסומן'}</span></div>
-    </div>
-  ` : ''
-
-  const thumbSection = campaign.thumbnailPreview ? `
-    <div class="field-row thumb-row">
-      <span class="field-label">תמונה ממוזערת:</span>
-      <img src="${campaign.thumbnailPreview}" class="thumb-img" alt="thumbnail" />
     </div>
   ` : ''
 
@@ -97,7 +90,6 @@ function buildCampaignHTML(campaign, index) {
           <div class="field-row"><span class="field-label">קישור יעד:</span><span class="field-value ltr">${urlDisplay}</span></div>
           <div class="field-row"><span class="field-label">כותרת:</span><span class="field-value">${esc(campaign.title) || '<span class="empty">לא הוזן</span>'}</span></div>
           ${videoSection}
-          ${thumbSection}
         </div>
         ${facebookSection}
         ${notesSection}
@@ -106,8 +98,25 @@ function buildCampaignHTML(campaign, index) {
   `
 }
 
-function buildFullHTML(orgName, campaigns) {
+async function getLogoDataUrl() {
+  try {
+    const res = await fetch('/logo_briefon2.png')
+    const blob = await res.blob()
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
+
+function buildFullHTML(orgName, campaigns, logoDataUrl) {
   const campaignsHTML = campaigns.map((c, i) => buildCampaignHTML(c, i)).join('')
+  const logoImg = logoDataUrl
+    ? `<img src="${logoDataUrl}" class="header-logo" alt="הבריפון" />`
+    : ''
 
   return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
@@ -134,7 +143,18 @@ function buildFullHTML(orgName, campaigns) {
     color: white;
     padding: 28px 36px;
     margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
   }
+
+  .header-logo {
+    height: 48px;
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .header-text { flex: 1; }
 
   .page-header .org-label {
     font-size: 11px;
@@ -310,9 +330,12 @@ function buildFullHTML(orgName, campaigns) {
 </head>
 <body>
   <div class="page-header">
-    <div class="org-label">בריף שיווקי</div>
-    <div class="org-name">${esc(orgName)}</div>
-    <div class="subtitle">הופק בתאריך ${new Date().toLocaleDateString('he-IL')}</div>
+    ${logoImg}
+    <div class="header-text">
+      <div class="org-label">בריף שיווקי</div>
+      <div class="org-name">${esc(orgName)}</div>
+      <div class="subtitle">הופק בתאריך ${new Date().toLocaleDateString('he-IL')}</div>
+    </div>
   </div>
   <div class="content">
     ${campaignsHTML}
@@ -333,7 +356,8 @@ function getElementDocumentOffset(el) {
 }
 
 export async function generatePDF(orgName, campaigns) {
-  const html = buildFullHTML(orgName, campaigns)
+  const logoDataUrl = await getLogoDataUrl()
+  const html = buildFullHTML(orgName, campaigns, logoDataUrl)
 
   // Open in a hidden iframe, render, then capture via html2canvas
   const { default: html2canvas } = await import('html2canvas')
@@ -361,13 +385,15 @@ export async function generatePDF(orgName, campaigns) {
   const linkData = []
   const linkEls = iframeDoc.querySelectorAll('a.pdf-link[href]')
   for (const el of linkEls) {
-    const offset = getElementDocumentOffset(el)
+    const rect = el.getBoundingClientRect()
+    const scrollY = iframe.contentWindow.scrollY || 0
+    const scrollX = iframe.contentWindow.scrollX || 0
     linkData.push({
       url: el.href,
-      x: offset.left,
-      y: offset.top,
-      width: el.offsetWidth,
-      height: el.offsetHeight,
+      x: rect.left + scrollX,
+      y: rect.top + scrollY,
+      width: rect.width,
+      height: rect.height,
     })
   }
 
