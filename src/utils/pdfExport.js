@@ -16,16 +16,39 @@ const CONTACT_LABELS = {
   city: 'עיר',
 }
 
+const PLATFORM_LABELS = {
+  facebook: 'פייסבוק',
+  outbrain: 'אאוטבריין',
+  google: 'גוגל',
+}
+
 function esc(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 function buildCampaignHTML(campaign, index) {
+  const currencySymbol = campaign.currency === 'usd' ? '$' : '₪'
+  const budgetDisplay = campaign.budget
+    ? `${currencySymbol}${campaign.budget}`
+    : '<span class="empty">לא הוזן</span>'
+
+  const urlDisplay = campaign.url
+    ? `<a href="${campaign.url}" class="pdf-link">${esc(campaign.url)}</a>`
+    : '<span class="empty">לא הוזן</span>'
+
+  const videoLinkDisplay = campaign.videoLink
+    ? `<a href="${campaign.videoLink}" class="pdf-link">${esc(campaign.videoLink)}</a>`
+    : '<span class="empty">לא הוזן</span>'
+
   const videoSection = campaign.videoType === 'link'
-    ? `<div class="field-row"><span class="field-label">לינק לסרטון:</span><span class="field-value ltr">${esc(campaign.videoLink) || '<span class="empty">לא הוזן</span>'}</span></div>`
+    ? `<div class="field-row"><span class="field-label">לינק לסרטון:</span><span class="field-value ltr">${videoLinkDisplay}</span></div>`
     : `<div class="field-row"><span class="field-label">תיאור סרטון:</span><span class="field-value">${esc(campaign.videoDescription) || '<span class="empty">לא הוזן</span>'}</span></div>`
 
   const contactLabels = (campaign.contactDetails || []).map(c => CONTACT_LABELS[c] || c).join(' | ')
+
+  const answersHTML = campaign.questionType === 'multiple' && (campaign.questionAnswers || []).some(a => a)
+    ? `<div class="answers-list">${(campaign.questionAnswers || []).map((a, i) => a ? `<div class="answer-item">${['א', 'ב', 'ג'][i]}. ${esc(a)}</div>` : '').join('')}</div>`
+    : ''
 
   const facebookSection = campaign.hasFacebookForm ? `
     <div class="section">
@@ -33,7 +56,7 @@ function buildCampaignHTML(campaign, index) {
       <div class="field-row"><span class="field-label">כותרת הטופס:</span><span class="field-value">${esc(campaign.formTitle) || '<span class="empty">לא הוזן</span>'}</span></div>
       <div class="field-row"><span class="field-label">תיאור תפקיד:</span><span class="field-value">${esc(campaign.formJobTitle) || '<span class="empty">לא הוזן</span>'}</span></div>
       <div class="field-row"><span class="field-label">פרטי התקשרות:</span><span class="field-value">${esc(contactLabels) || '<span class="empty">לא נבחרו</span>'}</span></div>
-      <div class="field-row"><span class="field-label">שאלה מבדלת:</span><span class="field-value">${esc(campaign.distinguishingQuestion) || '<span class="empty">לא הוזן</span>'}</span></div>
+      <div class="field-row"><span class="field-label">שאלה מבדלת:</span><span class="field-value">${esc(campaign.distinguishingQuestion) || '<span class="empty">לא הוזן</span>'}${answersHTML}</span></div>
       <div class="field-row"><span class="field-label">אישור עדכונים:</span><span class="field-value">${campaign.acceptUpdates ? '✓ מסומן' : '✗ לא מסומן'}</span></div>
     </div>
   ` : ''
@@ -56,18 +79,22 @@ function buildCampaignHTML(campaign, index) {
     ? `${campaign.startDate || '?'} — ${campaign.endDate || '?'}`
     : '<span class="empty">לא נקבע</span>'
 
+  const platformLabel = PLATFORM_LABELS[campaign.platform] || campaign.platform || '<span class="empty">לא נבחר</span>'
+
   return `
     <div class="campaign-card">
       <div class="campaign-header">
         <div class="campaign-number">${index + 1}</div>
         <div class="campaign-title">${esc(campaign.name) || `קמפיין ${index + 1}`}</div>
+        ${campaign.platform ? `<div class="campaign-platform">${platformLabel}</div>` : ''}
       </div>
       <div class="campaign-body">
         <div class="fields-grid">
           <div class="field-row"><span class="field-label">שם קמפיין:</span><span class="field-value">${esc(campaign.name) || '<span class="empty">לא הוזן</span>'}</span></div>
-          <div class="field-row"><span class="field-label">תקציב:</span><span class="field-value">${campaign.budget ? '₪' + campaign.budget : '<span class="empty">לא הוזן</span>'}</span></div>
+          <div class="field-row"><span class="field-label">פלטפורמה:</span><span class="field-value">${platformLabel}</span></div>
+          <div class="field-row"><span class="field-label">תקציב:</span><span class="field-value">${budgetDisplay}</span></div>
           <div class="field-row"><span class="field-label">תאריכים:</span><span class="field-value ltr">${dateRange}</span></div>
-          <div class="field-row"><span class="field-label">קישור יעד:</span><span class="field-value ltr">${esc(campaign.url) || '<span class="empty">לא הוזן</span>'}</span></div>
+          <div class="field-row"><span class="field-label">קישור יעד:</span><span class="field-value ltr">${urlDisplay}</span></div>
           <div class="field-row"><span class="field-label">כותרת:</span><span class="field-value">${esc(campaign.title) || '<span class="empty">לא הוזן</span>'}</span></div>
           ${videoSection}
           ${thumbSection}
@@ -167,6 +194,17 @@ function buildFullHTML(orgName, campaigns) {
     font-size: 15px;
     font-weight: 700;
     color: ${GRAY_DARK};
+    flex: 1;
+  }
+
+  .campaign-platform {
+    font-size: 11px;
+    font-weight: 600;
+    color: ${PURPLE};
+    background: white;
+    border: 1px solid #e9d5ff;
+    border-radius: 6px;
+    padding: 3px 9px;
   }
 
   .campaign-body { padding: 16px 18px; }
@@ -205,6 +243,12 @@ function buildFullHTML(orgName, campaigns) {
     unicode-bidi: embed;
   }
 
+  a.pdf-link {
+    color: ${PURPLE};
+    text-decoration: underline;
+    word-break: break-all;
+  }
+
   .empty { color: ${GRAY_LIGHT}; font-style: italic; }
 
   .section {
@@ -229,6 +273,19 @@ function buildFullHTML(orgName, campaigns) {
     color: ${GRAY_DARK};
     white-space: pre-wrap;
     line-height: 1.7;
+  }
+
+  .answers-list {
+    margin-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .answer-item {
+    font-size: 12px;
+    color: ${GRAY_MID};
+    padding-right: 4px;
   }
 
   .thumb-img {
@@ -259,10 +316,20 @@ function buildFullHTML(orgName, campaigns) {
   </div>
   <div class="content">
     ${campaignsHTML}
-    <div class="footer">נוצר באמצעות הבריפון • ${new Date().toLocaleDateString('he-IL')}</div>
+    <div class="footer">הבריפון • מבית שיווק דיגיטל • ${new Date().toLocaleDateString('he-IL')}</div>
   </div>
 </body>
 </html>`
+}
+
+function getElementDocumentOffset(el) {
+  let top = 0, left = 0
+  while (el) {
+    top += el.offsetTop || 0
+    left += el.offsetLeft || 0
+    el = el.offsetParent
+  }
+  return { top, left }
 }
 
 export async function generatePDF(orgName, campaigns) {
@@ -290,6 +357,20 @@ export async function generatePDF(orgName, campaigns) {
   iframe.style.height = body.scrollHeight + 'px'
   await new Promise(r => setTimeout(r, 200))
 
+  // Collect clickable link positions before capturing
+  const linkData = []
+  const linkEls = iframeDoc.querySelectorAll('a.pdf-link[href]')
+  for (const el of linkEls) {
+    const offset = getElementDocumentOffset(el)
+    linkData.push({
+      url: el.href,
+      x: offset.left,
+      y: offset.top,
+      width: el.offsetWidth,
+      height: el.offsetHeight,
+    })
+  }
+
   const canvas = await html2canvas(body, {
     scale: 2,
     useCORS: true,
@@ -313,6 +394,13 @@ export async function generatePDF(orgName, campaigns) {
   const pdfHeight = pdf.internal.pageSize.getHeight()
 
   pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+
+  // Add clickable link annotations over the image
+  for (const link of linkData) {
+    if (link.url) {
+      pdf.link(link.x, link.y, link.width, link.height, { url: link.url })
+    }
+  }
 
   const today = new Date()
   const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`

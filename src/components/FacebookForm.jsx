@@ -133,6 +133,50 @@ export default function FacebookForm({ campaign, onUpdate, index }) {
           dir="auto"
           placeholder="שאלה שתבדיל את הלידים המעוניינים..."
         />
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          {[{ value: 'open', label: 'שאלה פתוחה' }, { value: 'multiple', label: 'שאלה אמריקאית' }].map(opt => (
+            <label
+              key={opt.value}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer',
+                padding: '6px 12px', borderRadius: 8,
+                border: `1.5px solid ${campaign.questionType === opt.value ? PURPLE : '#e9d5ff'}`,
+                background: campaign.questionType === opt.value ? '#faf5ff' : 'white',
+                fontSize: 12, fontWeight: 500,
+                color: campaign.questionType === opt.value ? PURPLE : '#6b7280',
+                transition: 'all 0.15s',
+              }}
+            >
+              <input
+                type="radio"
+                name={`questionType-${index}`}
+                value={opt.value}
+                checked={campaign.questionType === opt.value}
+                onChange={() => onUpdate({ questionType: opt.value })}
+                style={{ accentColor: PURPLE, width: 13, height: 13 }}
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+        {campaign.questionType === 'multiple' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
+            {['א', 'ב', 'ג'].map((letter, i) => (
+              <StyledInput
+                key={i}
+                type="text"
+                value={(campaign.questionAnswers || [])[i] || ''}
+                onChange={e => {
+                  const answers = [...(campaign.questionAnswers || ['', '', ''])]
+                  answers[i] = e.target.value
+                  onUpdate({ questionAnswers: answers })
+                }}
+                dir="auto"
+                placeholder={`אפשרות ${letter}...`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Accept Updates checkbox */}

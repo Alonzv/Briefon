@@ -123,7 +123,7 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
             </div>
             {campaign.collapsed && campaign.budget && (
               <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>
-                תקציב: ₪{campaign.budget}
+                תקציב: {campaign.currency === 'usd' ? '$' : '₪'}{campaign.budget}
               </div>
             )}
           </div>
@@ -176,6 +176,41 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
       {!campaign.collapsed && (
         <div className="campaign-body-inner" style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
+          {/* Platform Selection */}
+          <div>
+            <label style={labelStyle}>פלטפורמה</label>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {[
+                { value: 'facebook', label: 'פייסבוק' },
+                { value: 'outbrain', label: 'אאוטבריין' },
+                { value: 'google', label: 'גוגל' },
+              ].map(opt => (
+                <label
+                  key={opt.value}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                    padding: '8px 16px', borderRadius: 8,
+                    border: `1.5px solid ${campaign.platform === opt.value ? PURPLE : '#e9d5ff'}`,
+                    background: campaign.platform === opt.value ? '#faf5ff' : 'white',
+                    fontSize: 13, fontWeight: 500,
+                    color: campaign.platform === opt.value ? PURPLE : '#6b7280',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`platform-${index}`}
+                    value={opt.value}
+                    checked={campaign.platform === opt.value}
+                    onChange={() => onUpdate({ platform: opt.value })}
+                    style={{ accentColor: PURPLE, width: 14, height: 14 }}
+                  />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Row 1: Campaign Name + Budget */}
           <div className="fields-2col">
             <Field label="שם קמפיין">
@@ -187,15 +222,36 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
                 placeholder="לדוגמה: קמפיין קיץ 2025"
               />
             </Field>
-            <Field label="תקציב (₪)">
-              <StyledInput
-                type="number"
-                value={campaign.budget}
-                onChange={e => onUpdate({ budget: e.target.value })}
-                dir="ltr"
-                placeholder="0"
-                min="0"
-              />
+            <Field label="תקציב">
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ display: 'flex', borderRadius: 8, border: '1.5px solid #e9d5ff', overflow: 'hidden', flexShrink: 0 }}>
+                  {[{ value: 'ils', symbol: '₪' }, { value: 'usd', symbol: '$' }].map(c => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => onUpdate({ currency: c.value })}
+                      style={{
+                        padding: '8px 12px', border: 'none', cursor: 'pointer',
+                        background: campaign.currency === c.value ? PURPLE : 'white',
+                        color: campaign.currency === c.value ? 'white' : '#6b7280',
+                        fontWeight: 700, fontSize: 14, fontFamily: 'inherit',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {c.symbol}
+                    </button>
+                  ))}
+                </div>
+                <StyledInput
+                  type="number"
+                  value={campaign.budget}
+                  onChange={e => onUpdate({ budget: e.target.value })}
+                  dir="ltr"
+                  placeholder="0"
+                  min="0"
+                  style={{ flex: 1 }}
+                />
+              </div>
             </Field>
           </div>
 
@@ -314,17 +370,35 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
                     <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 8 }}>
                       {campaign.thumbnail?.name}
                     </div>
-                    <button
-                      onClick={removeThumbnail}
-                      style={{
-                        padding: '5px 12px', borderRadius: 6,
-                        border: '1.5px solid #fecaca', background: '#fff5f5',
-                        color: '#ef4444', fontSize: 12, fontWeight: 600,
-                        cursor: 'pointer', fontFamily: 'inherit'
-                      }}
-                    >
-                      הסר תמונה
-                    </button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={() => {
+                          const a = document.createElement('a')
+                          a.href = campaign.thumbnailPreview
+                          a.download = campaign.thumbnail?.name || 'thumbnail.jpg'
+                          a.click()
+                        }}
+                        style={{
+                          padding: '5px 12px', borderRadius: 6,
+                          border: `1.5px solid #c4b5fd`, background: '#faf5ff',
+                          color: PURPLE, fontSize: 12, fontWeight: 600,
+                          cursor: 'pointer', fontFamily: 'inherit'
+                        }}
+                      >
+                        הורד תמונה
+                      </button>
+                      <button
+                        onClick={removeThumbnail}
+                        style={{
+                          padding: '5px 12px', borderRadius: 6,
+                          border: '1.5px solid #fecaca', background: '#fff5f5',
+                          color: '#ef4444', fontSize: 12, fontWeight: 600,
+                          cursor: 'pointer', fontFamily: 'inherit'
+                        }}
+                      >
+                        הסר תמונה
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
