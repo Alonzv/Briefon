@@ -106,8 +106,11 @@ function buildCampaignHTML(campaign, index) {
   `
 }
 
-function buildFullHTML(orgName, campaigns) {
+function buildFullHTML(orgName, campaigns, logoBase64 = null) {
   const campaignsHTML = campaigns.map((c, i) => buildCampaignHTML(c, i)).join('')
+  const logoHTML = logoBase64
+    ? `<img src="${logoBase64}" alt="הבריפון" style="height:48px;width:auto;display:block;margin-bottom:14px;" />`
+    : ''
 
   return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
@@ -310,6 +313,7 @@ function buildFullHTML(orgName, campaigns) {
 </head>
 <body>
   <div class="page-header">
+    ${logoHTML}
     <div class="org-label">בריף שיווקי</div>
     <div class="org-name">${esc(orgName)}</div>
     <div class="subtitle">הופק בתאריך ${new Date().toLocaleDateString('he-IL')}</div>
@@ -332,8 +336,24 @@ function getElementDocumentOffset(el) {
   return { top, left }
 }
 
+async function getLogoBase64() {
+  try {
+    const response = await fetch('/logo_briefon.png')
+    const blob = await response.blob()
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
+
 export async function generatePDF(orgName, campaigns) {
-  const html = buildFullHTML(orgName, campaigns)
+  const logoBase64 = await getLogoBase64()
+  const html = buildFullHTML(orgName, campaigns, logoBase64)
 
   // Open in a hidden iframe, render, then capture via html2canvas
   const { default: html2canvas } = await import('html2canvas')
