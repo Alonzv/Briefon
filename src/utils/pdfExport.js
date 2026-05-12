@@ -338,7 +338,7 @@ function getElementDocumentOffset(el) {
 
 async function getLogoBase64() {
   try {
-    const response = await fetch('/logo_briefon.png')
+    const response = await fetch('/logo_briefon2.png')
     const blob = await response.blob()
     return await new Promise((resolve, reject) => {
       const reader = new FileReader()
