@@ -259,7 +259,7 @@ function buildFullHTML(orgName, campaigns) {
   </div>
   <div class="content">
     ${campaignsHTML}
-    <div class="footer">נוצר באמצעות Briefon • ${new Date().toLocaleDateString('he-IL')}</div>
+    <div class="footer">נוצר באמצעות הבריפון • ${new Date().toLocaleDateString('he-IL')}</div>
   </div>
 </body>
 </html>`
@@ -314,6 +314,9 @@ export async function generatePDF(orgName, campaigns) {
 
   pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
 
-  const fileName = `brief-${(orgName || 'briefon').replace(/\s+/g, '-')}-${Date.now()}.pdf`
+  const today = new Date()
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const safeName = (orgName || 'הבריפון').replace(/\s+/g, '-').replace(/[\\/:*?"<>|]/g, '')
+  const fileName = `${safeName}_${dateStr}.pdf`
   pdf.save(fileName)
 }

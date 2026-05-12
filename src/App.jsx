@@ -79,7 +79,7 @@ export default function App() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'white', fontWeight: 800, fontSize: 18, boxShadow: '0 2px 8px rgba(138,16,235,0.3)'
               }}>B</div>
-              <span style={{ fontWeight: 700, fontSize: 18, color: '#1a1a2e' }}>Briefon</span>
+              <span style={{ fontWeight: 700, fontSize: 18, color: '#1a1a2e' }}>הבריפון</span>
             </div>
             <h1 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: '#6b7280' }}>בריף שיווקי</h1>
             <ExportButton onClick={handleExport} isLoading={isExporting} />
