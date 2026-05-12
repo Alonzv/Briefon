@@ -76,11 +76,11 @@ export default function App() {
       }}>
         <div style={{ maxWidth: 880, margin: '0 auto', padding: '0 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, height: 60 }}>
-            <div style={{ background: '#000', borderRadius: 10, padding: '4px 10px', display: 'inline-flex', alignItems: 'center' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center' }}>
               <img
-                src="/logo_briefon.png"
+                src="/logo_briefon2.png"
                 alt="הבריפון"
-                style={{ height: 36, width: 'auto', display: 'block' }}
+                style={{ height: 43, width: 'auto', display: 'block' }}
               />
             </div>
             <h1 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: '#6b7280' }}>בריף שיווקי | מבית שיווק דיגיטל</h1>
