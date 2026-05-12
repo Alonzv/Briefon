@@ -95,7 +95,7 @@ export default function App() {
           background: 'white', borderRadius: 20,
           boxShadow: '0 1px 8px rgba(138,16,235,0.07)',
           border: '1px solid #ede9fe',
-          padding: '20px 24px', marginBottom: 24
+          padding: '16px 24px', marginBottom: 24
         }}>
           <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#9ca3af', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             שם הארגון
@@ -107,7 +107,7 @@ export default function App() {
             dir="auto"
             placeholder="הכנס שם ארגון..."
             style={{
-              width: '100%', fontSize: 28, fontWeight: 700, color: '#1a1a2e',
+              width: '100%', fontSize: 22, fontWeight: 700, color: '#1a1a2e',
               border: 'none', borderBottom: '2px solid #ede9fe',
               outline: 'none', background: 'transparent', paddingBottom: 4,
               transition: 'border-color 0.2s', caretColor: '#8A10EB',
