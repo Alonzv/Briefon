@@ -288,6 +288,9 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
               <span style={{ fontSize: 12, fontWeight: 600, color: '#7c3aed', letterSpacing: '0.04em' }}>סרטון</span>
             </div>
             <div style={{ padding: 16 }}>
+              <p style={{ fontSize: 12, fontStyle: 'italic', color: '#4b5563', marginBottom: 12, lineHeight: 1.6 }}>
+                להשגת תוצאות מיטביות, אנו ממליצים לשלוח מספר וריאציות של קריאטיב לכל קמפיין. יש להעביר את כל החומרים בשני פורמטים: ריבוע (1:1) וסטורי (9:16).
+              </p>
               {/* Video type toggle */}
               <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
                 {[{ value: 'link', label: 'לינק להורדה' }, { value: 'old', label: 'סרטון ישן – תיאור' }].map(opt => (
