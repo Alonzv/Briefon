@@ -272,13 +272,13 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
           </Field>
 
           {/* Title */}
-          <Field label="כותרת">
+          <Field label="כותרת הקמפיין">
             <StyledInput
               type="text"
               value={campaign.title}
               onChange={e => onUpdate({ title: e.target.value })}
               dir="auto"
-              placeholder="כותרת הקמפיין..."
+              placeholder="הכותרת שתופיע בקישור המוצג במודעה"
             />
           </Field>
 
