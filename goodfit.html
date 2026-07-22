@@ -59,16 +59,6 @@
       text-align: center;
       position: relative;
     }
-    header::after {
-      content: "";
-      position: absolute;
-      left: 50%; bottom: 0;
-      transform: translateX(-50%);
-      width: 220px; height: 3px;
-      border-radius: 3px;
-      background: var(--grad-solid);
-      opacity: 0.85;
-    }
     .brand {
       display: inline-flex;
       align-items: center;
@@ -230,6 +220,15 @@
       background: var(--bg-2);
       border-left: 3px solid var(--accent);
     }
+
+    /* bottom full-width settings bar */
+    .settings-bottom { margin-top: 28px; }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0 32px;
+    }
+    .settings-grid .setting-row { border-bottom: 1px solid var(--border); }
 
     /* ---------- Preview area ---------- */
     .previews {
@@ -403,7 +402,7 @@
       <!-- ---------- LEFT COLUMN ---------- -->
       <div>
         <section class="panel framed">
-          <span class="step-tag">Step 1: Upload (JPG)</span>
+          <span class="step-tag">Step 1: Upload (JPG / PNG)</span>
 
           <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload a JPG image">
             <div class="plus" aria-hidden="true">
@@ -412,8 +411,8 @@
                 <line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
             </div>
-            <div class="dz-title">Drag &amp; Drop your high-res JPG or Click to browse</div>
-            <div class="dz-sub">JPG / JPEG &middot; processed 100% in your browser</div>
+            <div class="dz-title">Drag &amp; Drop your high-res JPG or PNG, or Click to browse</div>
+            <div class="dz-sub">JPG / JPEG / PNG &middot; processed 100% in your browser</div>
 
             <div class="loader-overlay" id="loader">
               <div class="spinner" aria-hidden="true"></div>
@@ -421,51 +420,12 @@
             </div>
           </div>
 
-          <input type="file" id="fileInput" accept="image/jpeg,image/jpg" class="visually-hidden">
+          <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png" class="visually-hidden">
 
           <div class="filemeta" id="filemeta">
             <strong id="fileName"></strong><br>
             <span id="fileDims"></span> &middot; <span id="fileSize"></span>
           </div>
-        </section>
-
-        <!-- ---------- Export settings ---------- -->
-        <section class="panel settings" style="margin-top:24px;">
-          <h2>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#c9a8ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-            </svg>
-            Export Settings
-          </h2>
-
-          <div class="setting-row">
-            <span class="k">Export Format</span>
-            <span class="v">JPG
-              <span class="badge-lock">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                Locked
-              </span>
-            </span>
-          </div>
-          <div class="setting-row">
-            <span class="k">Max File Size</span>
-            <span class="v">110 KB</span>
-          </div>
-          <div class="setting-row">
-            <span class="k">Color Profile</span>
-            <span class="v">sRGB</span>
-          </div>
-          <div class="setting-row">
-            <span class="k">Compression</span>
-            <span class="v">Adaptive (auto-quality)</span>
-          </div>
-
-          <p class="note">
-            Image is preserved with zero interpolation or quality loss. A non-AI compression
-            algorithm is used &mdash; it adaptively tunes JPEG quality to keep every export
-            under 110&nbsp;KB while retaining maximum visual fidelity.
-          </p>
         </section>
       </div>
 
@@ -566,6 +526,49 @@
       </div>
     </div>
 
+
+        <!-- ---------- Export settings ---------- -->
+        <section class="panel settings settings-bottom framed">
+          <h2>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#c9a8ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            Export Settings
+          </h2>
+          <div class="settings-grid">
+
+          <div class="setting-row">
+            <span class="k">Export Format</span>
+            <span class="v">JPG
+              <span class="badge-lock">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                Locked
+              </span>
+            </span>
+          </div>
+          <div class="setting-row">
+            <span class="k">Max File Size</span>
+            <span class="v">110 KB</span>
+          </div>
+          <div class="setting-row">
+            <span class="k">Color Profile</span>
+            <span class="v">sRGB</span>
+          </div>
+          <div class="setting-row">
+            <span class="k">Compression</span>
+            <span class="v">Adaptive (auto-quality)</span>
+          </div>
+
+          </div>
+          <p class="note">
+            Image is preserved with zero interpolation or quality loss. A non-AI compression
+            algorithm is used &mdash; it adaptively tunes JPEG quality to keep every export
+            under 110&nbsp;KB while retaining maximum visual fidelity.
+          </p>
+        </section>
+
+
     <footer>GoodFit &middot; Pure client-side crop &amp; compression for GoodNet &middot; No image ever leaves your browser</footer>
   </div>
 
@@ -629,8 +632,8 @@
     });
 
     function handleFile(file) {
-      if (!/jpe?g/i.test(file.type) && !/\.jpe?g$/i.test(file.name)) {
-        alert('Please upload a JPG / JPEG image.');
+      if (!/(jpe?g|png)/i.test(file.type) && !/\.(jpe?g|png)$/i.test(file.name)) {
+        alert('Please upload a JPG, JPEG or PNG image.');
         return;
       }
       els.loader.classList.add('show');
