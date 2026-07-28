@@ -233,8 +233,11 @@
     /* ---------- Preview area ---------- */
     .previews {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 1180px) {
+      .previews { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 720px) {
       .previews { grid-template-columns: 1fr; }
@@ -286,6 +289,7 @@
       padding: 20px;
     }
     .preview-b .crop-placeholder { aspect-ratio: 1.5 / 1; }
+    .preview-c .crop-placeholder { aspect-ratio: 620 / 413; }
     .crop-placeholder svg { width: 40px; height: 40px; opacity: .5; margin-bottom: 10px; }
 
     /* controls */
@@ -510,6 +514,45 @@
               <span class="target">(Target: &lt; 110 KB)</span>
             </div>
           </section>
+
+          <!-- Preview C -->
+          <section class="preview-card preview-c">
+            <div class="preview-head">
+              <span class="label">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#c9a8ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v14a2 2 0 0 0 2 2h14"/><path d="M18 21V7a2 2 0 0 0-2-2H2"/></svg>
+                FIXED SIZE
+              </span>
+              <span class="ratio-pill">620 &times; 413 px</span>
+            </div>
+
+            <div class="crop-frame">
+              <div class="crop-shell" id="shellC">
+                <div class="crop-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+                  Upload an image to preview the 620&times;413 crop
+                </div>
+              </div>
+            </div>
+
+            <div class="zoom-controls" data-for="C" style="display:none;">
+              <button class="icon-btn" data-act="out" title="Zoom out" aria-label="Zoom out">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </button>
+              <input type="range" min="0" max="100" value="0" aria-label="Zoom fixed-size image">
+              <button class="icon-btn" data-act="in" title="Zoom in" aria-label="Zoom in">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </button>
+              <button class="icon-btn" data-act="reset" title="Reset" aria-label="Reset">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+              </button>
+            </div>
+
+            <div class="size-line">
+              <span class="mini-spin" id="spinC"></span>
+              Estimated Size: <span class="est" id="estC">&mdash;</span>
+              <span class="target">(Target: &lt; 110 KB)</span>
+            </div>
+          </section>
         </div>
 
         <!-- ---------- Action buttons ---------- -->
@@ -521,6 +564,10 @@
           <button class="btn-grad" id="dlTeaser" disabled>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download Teaser (1.5:1)
+          </button>
+          <button class="btn-grad" id="dlFixed" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download 620 &times; 413
           </button>
         </div>
       </div>
@@ -578,11 +625,14 @@
 
     var MAX_BYTES = 110 * 1024;          // 110 KB hard cap
     var MAX_OUTPUT_WIDTH = 2000;         // cap so we never emit absurdly large files
-    var RATIOS = { A: 1.69, B: 1.5 };    // Main / Teaser aspect ratios
+    // Aspect ratios per preview (Main / Teaser / fixed-size 620x413)
+    var RATIOS = { A: 1.69, B: 1.5, C: 620 / 413 };
+    // Fixed output dimensions (exact pixel export); null = keep source resolution
+    var FIXED = { A: null, B: null, C: { w: 620, h: 413 } };
 
-    var croppers = { A: null, B: null };
-    var lastResult = { A: null, B: null }; // cached {blob, quality, width, height}
-    var debounceTimers = { A: null, B: null };
+    var croppers = { A: null, B: null, C: null };
+    var lastResult = { A: null, B: null, C: null }; // cached {blob, quality, width, height}
+    var debounceTimers = { A: null, B: null, C: null };
 
     var els = {
       dropzone: document.getElementById('dropzone'),
@@ -594,12 +644,16 @@
       fileSize: document.getElementById('fileSize'),
       shellA: document.getElementById('shellA'),
       shellB: document.getElementById('shellB'),
+      shellC: document.getElementById('shellC'),
       estA: document.getElementById('estA'),
       estB: document.getElementById('estB'),
+      estC: document.getElementById('estC'),
       spinA: document.getElementById('spinA'),
       spinB: document.getElementById('spinB'),
+      spinC: document.getElementById('spinC'),
       dlMain: document.getElementById('dlMain'),
-      dlTeaser: document.getElementById('dlTeaser')
+      dlTeaser: document.getElementById('dlTeaser'),
+      dlFixed: document.getElementById('dlFixed')
     };
 
     /* ---------------- Upload handling ---------------- */
@@ -651,6 +705,7 @@
 
           buildCropper('A', dataUrl);
           buildCropper('B', dataUrl);
+          buildCropper('C', dataUrl);
 
           els.loader.classList.remove('show');
           els.dropzone.querySelector('.dz-title').textContent = 'Image loaded — click to replace';
@@ -666,12 +721,12 @@
 
     /* ---------------- Cropper setup ---------------- */
     function buildCropper(key, dataUrl) {
-      var shell = key === 'A' ? els.shellA : els.shellB;
+      var shell = els['shell' + key];
       // reset shell content -> fresh <img>
       if (croppers[key]) { croppers[key].destroy(); croppers[key] = null; }
       shell.innerHTML = '';
       var img = document.createElement('img');
-      img.alt = key === 'A' ? 'Main crop source' : 'Teaser crop source';
+      img.alt = 'Crop source ' + key;
       shell.appendChild(img);
       img.src = dataUrl;
 
@@ -703,7 +758,7 @@
     }
 
     /* track zoom range to keep slider roughly in sync */
-    var zoomState = { A: { min: 0, max: 3, val: 0 }, B: { min: 0, max: 3, val: 0 } };
+    var zoomState = { A: { val: 0 }, B: { val: 0 }, C: { val: 0 } };
 
     function syncSlider(key) {
       var c = croppers[key];
@@ -752,18 +807,18 @@
     /* ---------------- Size estimation (debounced) ---------------- */
     function scheduleEstimate(key) {
       if (debounceTimers[key]) clearTimeout(debounceTimers[key]);
-      var spin = key === 'A' ? els.spinA : els.spinB;
+      var spin = els['spin' + key];
       spin.classList.add('show');
       debounceTimers[key] = setTimeout(function () { estimate(key); }, 260);
     }
 
     function estimate(key) {
       var c = croppers[key];
-      var estEl = key === 'A' ? els.estA : els.estB;
-      var spin = key === 'A' ? els.spinA : els.spinB;
+      var estEl = els['est' + key];
+      var spin = els['spin' + key];
       if (!c) { spin.classList.remove('show'); return; }
 
-      compress(c).then(function (res) {
+      compress(c, FIXED[key]).then(function (res) {
         lastResult[key] = res;
         spin.classList.remove('show');
         var kb = res.blob.size / 1024;
@@ -781,8 +836,12 @@
        binary-search JPEG quality for the highest value that stays
        under MAX_BYTES. If even the lowest quality is too large,
        downscale the canvas and repeat. Zero interpolation on the
-       crop itself (canvas is drawn 1:1 from source pixels). */
-    function compress(cropper) {
+       crop itself (canvas is drawn 1:1 from source pixels).
+
+       When `fixed` ({w,h}) is supplied, the output is locked to those
+       exact pixel dimensions and only the JPEG quality is tuned to
+       stay under the size cap (no downscaling). */
+    function compress(cropper, fixed) {
       return new Promise(function (resolve, reject) {
         var base = cropper.getCroppedCanvas({
           imageSmoothingEnabled: true,
@@ -790,18 +849,24 @@
         });
         if (!base) { reject(new Error('no canvas')); return; }
 
-        var width = base.width;
-        var height = base.height;
-        if (width > MAX_OUTPUT_WIDTH) {
-          var s = MAX_OUTPUT_WIDTH / width;
-          width = Math.round(width * s);
-          height = Math.round(height * s);
+        var width, height;
+        if (fixed) {
+          width = fixed.w;
+          height = fixed.h;
+        } else {
+          width = base.width;
+          height = base.height;
+          if (width > MAX_OUTPUT_WIDTH) {
+            var s = MAX_OUTPUT_WIDTH / width;
+            width = Math.round(width * s);
+            height = Math.round(height * s);
+          }
         }
 
         var attempt = 0;
         function tryPass() {
           var canvas = base;
-          if (width !== base.width) {
+          if (width !== base.width || height !== base.height) {
             canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
@@ -813,13 +878,14 @@
           bestQualityUnder(canvas, MAX_BYTES).then(function (out) {
             if (out) {
               resolve({ blob: out.blob, quality: out.quality, width: width, height: height });
-            } else if (attempt < 7) {
+            } else if (!fixed && attempt < 7) {
               attempt++;
               width = Math.round(width * 0.85);
               height = Math.round(height * 0.85);
               tryPass();
             } else {
-              // give best effort at lowest quality
+              // fixed size (or exhausted attempts): best effort at lowest quality,
+              // keeping the locked dimensions intact.
               toBlob(canvas, 0.3).then(function (b) {
                 resolve({ blob: b, quality: 0.3, width: width, height: height });
               });
@@ -868,18 +934,20 @@
     }
 
     /* ---------------- Download ---------------- */
+    var dlButtons = { A: els.dlMain, B: els.dlTeaser, C: els.dlFixed };
+
     function enableDownloads() {
       if (croppers.A) els.dlMain.disabled = false;
       if (croppers.B) els.dlTeaser.disabled = false;
+      if (croppers.C) els.dlFixed.disabled = false;
     }
 
     function download(key, filename) {
       var c = croppers[key];
       if (!c) return;
-      var btn = key === 'A' ? els.dlMain : els.dlTeaser;
-      var original = btn.innerHTML;
+      var btn = dlButtons[key];
       btn.disabled = true;
-      compress(c).then(function (res) {
+      compress(c, FIXED[key]).then(function (res) {
         var url = URL.createObjectURL(res.blob);
         var a = document.createElement('a');
         a.href = url;
@@ -897,6 +965,9 @@
     });
     els.dlTeaser.addEventListener('click', function () {
       download('B', 'goodfit-teaser-1.5x1.jpg');
+    });
+    els.dlFixed.addEventListener('click', function () {
+      download('C', 'goodfit-620x413.jpg');
     });
 
     /* ---------------- helpers ---------------- */
