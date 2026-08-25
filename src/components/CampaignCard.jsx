@@ -342,10 +342,10 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
             />
           </Field>
 
-          {/* Videos Section */}
+          {/* Attachments Section */}
           <div style={{ borderRadius: 12, border: '1.5px solid #e9d5ff', overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', background: '#faf5ff', borderBottom: '1px solid #e9d5ff' }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#7c3aed', letterSpacing: '0.04em' }}>סרטון</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#7c3aed', letterSpacing: '0.04em' }}>קבצים מצורפים</span>
             </div>
             <div style={{ padding: 16 }}>
               <p style={{ fontSize: 12, fontStyle: 'italic', color: '#4b5563', marginBottom: 12, lineHeight: 1.6 }}>
@@ -380,14 +380,61 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
               </div>
 
               {campaign.videoType === 'link' ? (
-                <StyledInput
-                  type="url"
-                  value={campaign.videoLink}
-                  onChange={e => onUpdate({ videoLink: e.target.value })}
-                  dir="ltr"
-                  placeholder="https://drive.google.com/..."
-                  style={{ textAlign: 'left' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <StyledInput
+                      type="url"
+                      value={campaign.videoLink}
+                      onChange={e => onUpdate({ videoLink: e.target.value })}
+                      dir="ltr"
+                      placeholder="https://drive.google.com/..."
+                      style={{ textAlign: 'left', flex: 1 }}
+                    />
+                  </div>
+                  {(campaign.additionalVideoLinks || []).map((u, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <StyledInput
+                        type="url"
+                        value={u}
+                        onChange={e => {
+                          const updated = [...(campaign.additionalVideoLinks || [])]
+                          updated[i] = e.target.value
+                          onUpdate({ additionalVideoLinks: updated })
+                        }}
+                        dir="ltr"
+                        placeholder="https://drive.google.com/..."
+                        style={{ textAlign: 'left', flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = (campaign.additionalVideoLinks || []).filter((_, idx) => idx !== i)
+                          onUpdate({ additionalVideoLinks: updated })
+                        }}
+                        style={{
+                          width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                          border: '1.5px solid #fecaca', background: '#fff5f5',
+                          color: '#ef4444', cursor: 'pointer', fontSize: 16,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: 'inherit',
+                        }}
+                      >×</button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => onUpdate({ additionalVideoLinks: [...(campaign.additionalVideoLinks || []), ''] })}
+                    style={{
+                      alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '5px 12px', borderRadius: 8,
+                      border: '1.5px solid #c4b5fd', background: '#faf5ff',
+                      color: PURPLE, fontSize: 12, fontWeight: 600,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >
+                    <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> הוסף קישור
+                  </button>
+                </div>
               ) : (
                 <StyledTextarea
                   value={campaign.videoDescription}

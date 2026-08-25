@@ -18,6 +18,7 @@ const createEmptyCampaign = (id) => ({
   title: '',
   videoType: 'link',
   videoLink: '',
+  additionalVideoLinks: [],
   videoDescription: '',
   thumbnail: null,
   thumbnailPreview: null,

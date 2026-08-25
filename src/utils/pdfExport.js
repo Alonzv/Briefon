@@ -50,8 +50,12 @@ function buildCampaignHTML(campaign, index) {
     ? `<a href="${esc(campaign.videoLink)}" class="pdf-link">${esc(campaign.videoLink)}</a>`
     : '<span class="empty">לא הוזן</span>'
 
+  const additionalVideoLinksHTML = (campaign.additionalVideoLinks || []).filter(u => u).map(u =>
+    `<div class="field-row"><span class="field-label">קובץ נוסף:</span><span class="field-value ltr"><a href="${esc(u)}" class="pdf-link">${esc(u)}</a></span></div>`
+  ).join('')
+
   const videoSection = campaign.videoType === 'link'
-    ? `<div class="field-row"><span class="field-label">לינק להורדת קבצים:</span><span class="field-value ltr">${videoLinkDisplay}</span></div>`
+    ? `<div class="field-row"><span class="field-label">לינק להורדת קבצים:</span><span class="field-value ltr">${videoLinkDisplay}</span></div>${additionalVideoLinksHTML}`
     : `<div class="field-row"><span class="field-label">תיאור סרטון:</span><span class="field-value">${esc(campaign.videoDescription) || '<span class="empty">לא הוזן</span>'}</span></div>`
 
   const contactLabels = (campaign.contactDetails || []).map(c => CONTACT_LABELS[c] || c).join(' | ')
