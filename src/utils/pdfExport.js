@@ -9,7 +9,7 @@ const GRAY_LIGHT = '#9ca3af'
 // A4 at 96dpi: 794 x 1123px  |  595.28 x 841.89pt
 const A4_W = 794
 const A4_H = 1123
-const PT_PER_PX = 595.28 / A4_W  // 0.74972…
+const PT_PER_PX = 595.28 / A4_W
 
 const CONTACT_LABELS = {
   phone: 'טלפון',
@@ -37,6 +37,14 @@ function buildCampaignHTML(campaign, index) {
   const urlDisplay = campaign.url
     ? `<a href="${esc(campaign.url)}" class="pdf-link">${esc(campaign.url)}</a>`
     : '<span class="empty">לא הוזן</span>'
+
+  const additionalUrlsHTML = (campaign.additionalUrls || []).filter(u => u).map(u =>
+    `<div class="field-row"><span class="field-label">קישור נוסף:</span><span class="field-value ltr"><a href="${esc(u)}" class="pdf-link">${esc(u)}</a></span></div>`
+  ).join('')
+
+  const copySection = campaign.copy
+    ? `<div class="field-row"><span class="field-label">קופי:</span><span class="field-value" style="white-space:pre-wrap">${esc(campaign.copy)}</span></div>`
+    : ''
 
   const videoLinkDisplay = campaign.videoLink
     ? `<a href="${esc(campaign.videoLink)}" class="pdf-link">${esc(campaign.videoLink)}</a>`
@@ -90,7 +98,9 @@ function buildCampaignHTML(campaign, index) {
           <div class="field-row"><span class="field-label">תקציב:</span><span class="field-value">${budgetDisplay}</span></div>
           <div class="field-row"><span class="field-label">תאריכים:</span><span class="field-value ltr">${dateRange}</span></div>
           <div class="field-row"><span class="field-label">קישור יעד:</span><span class="field-value ltr">${urlDisplay}</span></div>
+          ${additionalUrlsHTML}
           <div class="field-row"><span class="field-label">כותרת:</span><span class="field-value">${esc(campaign.title) || '<span class="empty">לא הוזן</span>'}</span></div>
+          ${copySection}
           ${videoSection}
         </div>
         ${facebookSection}
@@ -374,7 +384,6 @@ export async function generatePDF(orgName, campaigns) {
   iframe.style.height = body.scrollHeight + 'px'
   await new Promise(r => setTimeout(r, 300))
 
-  // Collect link positions (in original px space)
   const linkData = []
   for (const el of iframeDoc.querySelectorAll('a.pdf-link[href]')) {
     const rect = el.getBoundingClientRect()
@@ -403,10 +412,9 @@ export async function generatePDF(orgName, campaigns) {
   document.body.removeChild(iframe)
 
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
-  const pdfW = pdf.internal.pageSize.getWidth()   // 595.28pt
-  const pdfH = pdf.internal.pageSize.getHeight()  // 841.89pt
+  const pdfW = pdf.internal.pageSize.getWidth()
+  const pdfH = pdf.internal.pageSize.getHeight()
 
-  // Height in canvas pixels that corresponds to one A4 page
   const canvasPageH = A4_H * SCALE
   const totalPages = Math.ceil(canvas.height / canvasPageH)
 
@@ -416,19 +424,16 @@ export async function generatePDF(orgName, campaigns) {
     const srcY = page * canvasPageH
     const srcH = Math.min(canvasPageH, canvas.height - srcY)
 
-    // Slice canvas into A4 page strip
     const strip = document.createElement('canvas')
     strip.width = canvas.width
     strip.height = srcH
     strip.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH)
 
     const imgData = strip.toDataURL('image/png')
-    // Rendered height in pt (srcH is at SCALE, divide back to px, then convert to pt)
     const renderedPtH = (srcH / SCALE) * PT_PER_PX
 
     pdf.addImage(imgData, 'PNG', 0, 0, pdfW, renderedPtH)
 
-    // Link annotations for this page
     const pageTopPx = page * A4_H
     const pageBottomPx = pageTopPx + A4_H
 

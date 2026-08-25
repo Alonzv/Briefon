@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import CampaignCard from './components/CampaignCard'
 import ExportButton from './components/ExportButton'
 import { generatePDF } from './utils/pdfExport'
@@ -13,6 +13,8 @@ const createEmptyCampaign = (id) => ({
   startDate: '',
   endDate: '',
   url: '',
+  additionalUrls: [],
+  copy: '',
   title: '',
   videoType: 'link',
   videoLink: '',

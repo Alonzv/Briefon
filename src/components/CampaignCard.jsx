@@ -260,17 +260,65 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
             </Field>
           </div>
 
-          {/* URL */}
-          <Field label="קישור לעמוד היעד">
-            <StyledInput
-              type="url"
-              value={campaign.url}
-              onChange={e => onUpdate({ url: e.target.value })}
-              dir="ltr"
-              placeholder="https://example.com"
-              style={{ textAlign: 'left' }}
-            />
-          </Field>
+          {/* URLs */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <label style={labelStyle}>קישורים לעמוד היעד</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <StyledInput
+                  type="url"
+                  value={campaign.url}
+                  onChange={e => onUpdate({ url: e.target.value })}
+                  dir="ltr"
+                  placeholder="https://example.com"
+                  style={{ textAlign: 'left', flex: 1 }}
+                />
+              </div>
+              {(campaign.additionalUrls || []).map((u, i) => (
+                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <StyledInput
+                    type="url"
+                    value={u}
+                    onChange={e => {
+                      const updated = [...(campaign.additionalUrls || [])]
+                      updated[i] = e.target.value
+                      onUpdate({ additionalUrls: updated })
+                    }}
+                    dir="ltr"
+                    placeholder="https://example.com"
+                    style={{ textAlign: 'left', flex: 1 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = (campaign.additionalUrls || []).filter((_, idx) => idx !== i)
+                      onUpdate({ additionalUrls: updated })
+                    }}
+                    style={{
+                      width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                      border: '1.5px solid #fecaca', background: '#fff5f5',
+                      color: '#ef4444', cursor: 'pointer', fontSize: 16,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: 'inherit',
+                    }}
+                  >×</button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => onUpdate({ additionalUrls: [...(campaign.additionalUrls || []), ''] })}
+                style={{
+                  alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '5px 12px', borderRadius: 8,
+                  border: '1.5px solid #c4b5fd', background: '#faf5ff',
+                  color: PURPLE, fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                <span style={{ fontSize: 16, lineHeight: 1 }}>+</span> הוסף קישור
+              </button>
+            </div>
+          </div>
 
           {/* Title */}
           <Field label="כותרת הקמפיין">
@@ -280,6 +328,17 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
               onChange={e => onUpdate({ title: e.target.value })}
               dir="auto"
               placeholder="הכותרת שתופיע בקישור המוצג במודעה"
+            />
+          </Field>
+
+          {/* Copy */}
+          <Field label="קופי">
+            <StyledTextarea
+              value={campaign.copy}
+              onChange={e => onUpdate({ copy: e.target.value })}
+              dir="auto"
+              placeholder="טקסט המודעה..."
+              rows={4}
             />
           </Field>
 
