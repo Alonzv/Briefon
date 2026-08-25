@@ -228,6 +228,7 @@ export default function CampaignCard({ campaign, index, isFirst, onUpdate, onRem
                   type="number"
                   value={campaign.budget}
                   onChange={e => onUpdate({ budget: e.target.value })}
+                  onWheel={e => e.target.blur()}
                   dir="ltr"
                   placeholder="0"
                   min="0"

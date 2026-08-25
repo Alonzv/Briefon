@@ -275,8 +275,14 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
 
   a.pdf-link {
     color: ${PURPLE};
+    font-weight: 700;
     text-decoration: underline;
     word-break: break-all;
+    background: #f3e8ff;
+    border: 1.5px solid #c4b5fd;
+    border-radius: 5px;
+    padding: 2px 6px;
+    display: inline-block;
   }
 
   .empty { color: ${GRAY_LIGHT}; font-style: italic; }
@@ -441,6 +447,6 @@ export async function generatePDF(orgName, campaigns) {
 
   const today = new Date()
   const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-  const safeName = (orgName || 'הבריפון').replace(/\s+/g, '-').replace(/[\\/:*?"<>|]/g, '')
+  const safeName = (orgName || 'הבריפון').replace(/\s+/g, '-').replace(/[\\\/:\*?"<>|]/g, '')
   pdf.save(`${safeName}_${dateStr}.pdf`)
 }
