@@ -1,15 +1,10 @@
-import jsPDF from 'jspdf'
-
 const PURPLE = '#8A10EB'
 const PURPLE_LIGHT = '#f5f3ff'
 const GRAY_DARK = '#1a1a2e'
 const GRAY_MID = '#6b7280'
 const GRAY_LIGHT = '#9ca3af'
 
-// A4 at 96dpi: 794 x 1123px  |  595.28 x 841.89pt
 const A4_W = 794
-const A4_H = 1123
-const PT_PER_PX = 595.28 / A4_W
 
 const CONTACT_LABELS = {
   phone: 'טלפון',
@@ -150,8 +145,20 @@ function buildFullHTML(orgName, campaigns, logoDataUrl) {
     color: ${GRAY_DARK};
     font-size: 13px;
     line-height: 1.6;
-    width: ${A4_W}px;
+    max-width: ${A4_W}px;
+    margin: 0 auto;
     padding: 0;
+  }
+
+  @media print {
+    @page { size: A4; margin: 10mm 15mm; }
+    body { max-width: none; margin: 0; }
+    .campaign-card { page-break-inside: avoid; break-inside: avoid; }
+    .page-header, a.pdf-link, .campaign-header, .section {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .print-hint { display: none; }
   }
 
   .page-header {
@@ -369,93 +376,22 @@ export async function generatePDF(orgName, campaigns) {
   const logoDataUrl = await getLogoDataUrl()
   const html = buildFullHTML(orgName, campaigns, logoDataUrl)
 
-  const { default: html2canvas } = await import('html2canvas')
-
-  const iframe = document.createElement('iframe')
-  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${A4_W}px;height:1px;border:none;visibility:hidden;`
-  document.body.appendChild(iframe)
-
-  await new Promise(resolve => {
-    iframe.onload = resolve
-    iframe.srcdoc = html
-  })
-
-  await new Promise(r => setTimeout(r, 1500))
-
-  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
-  const body = iframeDoc.body
-
-  iframe.style.height = body.scrollHeight + 'px'
-  await new Promise(r => setTimeout(r, 300))
-
-  const linkData = []
-  for (const el of iframeDoc.querySelectorAll('a.pdf-link[href]')) {
-    const rect = el.getBoundingClientRect()
-    const scrollY = iframe.contentWindow.scrollY || 0
-    const scrollX = iframe.contentWindow.scrollX || 0
-    linkData.push({
-      url: el.href,
-      x: rect.left + scrollX,
-      y: rect.top + scrollY,
-      w: rect.width,
-      h: rect.height,
-    })
+  const printWindow = window.open('', '_blank', 'width=900,height=750')
+  if (!printWindow) {
+    alert('אנא אפשר חלונות קופצים לאתר זה כדי לייצא PDF')
+    return
   }
 
-  const SCALE = 2
-  const canvas = await html2canvas(body, {
-    scale: SCALE,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    width: A4_W,
-    windowWidth: A4_W,
-    logging: false,
+  printWindow.document.open()
+  printWindow.document.write(html)
+  printWindow.document.close()
+
+  await new Promise(r => {
+    printWindow.onload = r
+    setTimeout(r, 2000)
   })
 
-  document.body.removeChild(iframe)
-
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
-  const pdfW = pdf.internal.pageSize.getWidth()
-  const pdfH = pdf.internal.pageSize.getHeight()
-
-  const canvasPageH = A4_H * SCALE
-  const totalPages = Math.ceil(canvas.height / canvasPageH)
-
-  for (let page = 0; page < totalPages; page++) {
-    if (page > 0) pdf.addPage()
-
-    const srcY = page * canvasPageH
-    const srcH = Math.min(canvasPageH, canvas.height - srcY)
-
-    const strip = document.createElement('canvas')
-    strip.width = canvas.width
-    strip.height = srcH
-    strip.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH)
-
-    const imgData = strip.toDataURL('image/png')
-    const renderedPtH = (srcH / SCALE) * PT_PER_PX
-
-    pdf.addImage(imgData, 'PNG', 0, 0, pdfW, renderedPtH)
-
-    const pageTopPx = page * A4_H
-    const pageBottomPx = pageTopPx + A4_H
-
-    for (const link of linkData) {
-      if (!link.url) continue
-      if (link.y + link.h < pageTopPx || link.y > pageBottomPx) continue
-      pdf.link(
-        link.x * PT_PER_PX,
-        (link.y - pageTopPx) * PT_PER_PX,
-        link.w * PT_PER_PX,
-        link.h * PT_PER_PX,
-        { url: link.url }
-      )
-    }
-  }
-
-  const today = new Date()
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-  const safeName = (orgName || 'הבריפון').replace(/\s+/g, '-').replace(/[\\\/:\*?"<>|]/g, '')
-  pdf.save(`${safeName}_${dateStr}.pdf`)
+  await new Promise(r => setTimeout(r, 800))
+  printWindow.focus()
+  printWindow.print()
 }
